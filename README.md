@@ -1,118 +1,130 @@
-# DOCBOT 2.0 — Offline Intelligent Document Assistant
+<div align="center">
 
-An offline, privacy-first RAG assistant. Upload documents, ask questions,
-get answers grounded only in what you uploaded — no internet required after
-setup, no data leaves the machine.
+# 🧠 DOCBOT 2.0
 
-Developed by Mesa Sarah Vasantha Zephyr and Rampalli Prajna Paramita.
-Inspired by an internship project at DRDO's Advanced Systems Laboratory,
-Hyderabad.
+### Offline Intelligent Document Assistant
 
-## Quick start (Docker — recommended)
+*Private • Local • AI-Powered*
 
-Requires [Docker](https://docs.docker.com/get-docker/) and Docker Compose.
+<br>
+
+![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white)
+![React](https://img.shields.io/badge/Frontend-React-61DAFB?style=flat-square&logo=react&logoColor=black)
+![LangChain](https://img.shields.io/badge/LangChain-Framework-1C3C3C?style=flat-square)
+![Ollama](https://img.shields.io/badge/LLM-Ollama-000000?style=flat-square)
+![ChromaDB](https://img.shields.io/badge/VectorDB-ChromaDB-7B3FE4?style=flat-square)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)
+
+</div>
+
+---
+
+## ✦ What is DOCBOT?
+
+**DOCBOT 2.0** is a privacy-first, offline **Retrieval-Augmented Generation (RAG)** assistant that allows you to upload documents and interact with them using a local Large Language Model.
+
+Unlike cloud-based AI assistants, DOCBOT runs completely on your machine, ensuring **your documents never leave your device**.
+
+---
+
+## ✦ Features
+
+- 📄 Intelligent Document Processing
+- 💬 Context-Aware AI Chat
+- 🔍 Semantic Search with ChromaDB
+- 📷 OCR for Scanned PDFs
+- 🧠 Interactive Knowledge Graph
+- 📝 AI Summaries & Quiz Generation
+- 📊 Analytics Dashboard
+- 🔐 JWT Authentication
+- 🐳 Fully Dockerized
+- ⚡ Powered by Local LLMs using Ollama
+
+---
+
+## ✦ Tech Stack
+
+| Layer | Technology |
+|--------|------------|
+| **Frontend** | React • TypeScript • Tailwind CSS |
+| **Backend** | FastAPI • Python |
+| **AI** | LangChain • Ollama • Llama 3 |
+| **Vector Database** | ChromaDB |
+| **Database** | SQLite |
+| **Deployment** | Docker • Nginx • GitHub Actions |
+
+---
+
+## ✦ Quick Start
+
+### Clone the repository
 
 ```bash
-./scripts/setup.sh                    # creates backend/.env from the example
-docker-compose up --build -d          # builds and starts backend, frontend, ollama
-./scripts/pull-model.sh               # pulls llama3 into the ollama container
+git clone https://github.com/mesasarah/DocbotV2.git
+cd DocbotV2
 ```
 
-Open **http://localhost** — you'll land on the homepage explaining what
-DOCBOT does. Click "Get started" to create an account and start uploading
-documents.
+### Start DOCBOT
 
-Useful scripts:
 ```bash
-./scripts/logs.sh              # tail logs from all containers
-./scripts/pull-model.sh mistral # pull a different model
-./scripts/reset.sh             # wipe all data for a clean slate
+./scripts/setup.sh
+docker-compose up --build -d
+./scripts/pull-model.sh
 ```
 
-## Deploying to your own domain
+Open your browser at:
 
-See [DEPLOYMENT.md](./DEPLOYMENT.md) for running DOCBOT on a real server
-with a domain and automatic HTTPS (via Caddy). Read the RAM/CPU note at the
-top first — this stack runs its own LLM, which has real hardware
-requirements beyond a typical cheap website host.
-
-## Architecture
-
-```
-                    ┌─────────────┐
-   browser  ──────▶ │   nginx     │  (frontend container, port 80)
-                    │  + React SPA │
-                    └──────┬──────┘
-                           │ /api/* reverse-proxied
-                           ▼
-                    ┌─────────────┐        ┌──────────────┐
-                    │   FastAPI    │ ─────▶ │    Ollama     │
-                    │   backend    │        │  (local LLM)  │
-                    └──────┬──────┘        └──────────────┘
-                           │
-                 ┌─────────┴──────────┐
-                 ▼                    ▼
-            SQLite (users,       ChromaDB
-         documents, chats)    (embeddings)
+```text
+http://localhost
 ```
 
-Everything runs in Docker on your own machine (or an air-gapped server).
-The only network calls the backend makes are to the `ollama` container on
-the same Docker network — nothing external.
+---
 
-## Manual setup (without Docker)
+## ✦ Architecture
 
-See `backend/README.md` and `frontend/README.md` for running each service
-directly with Python/Node during development.
-
-## What's built so far
-
-- **Layer 1 — Backend**: JWT auth, document ingestion pipeline (extract →
-  chunk → embed → ChromaDB), RAG chat via local Ollama, 15 passing tests.
-- **Layer 2 — Frontend**: React + TypeScript, full auth flow, document
-  manager with live status, chat UI with citations, dashboard, settings.
-- **Layer 3 — Docker & CI/CD**: multi-stage Dockerfiles for both services,
-  nginx reverse proxy + static file serving, docker-compose with health
-  checks and persistent volumes, GitHub Actions CI.
-- **Layer 4 — Intelligence features**: OCR for scanned PDFs (automatic
-  per-page fallback via Tesseract), a knowledge graph (LLM-based
-  entity/relation extraction with an interactive SVG visualization),
-  document summarization and quiz generation, and a real analytics
-  dashboard with usage charts. 53 backend tests passing.
-- **Layer 5 — Public landing page & production deployment** *(this layer)*:
-  a marketing homepage explaining what DOCBOT is, with sign-in only
-  required once you actually try to use the app (redirects back to where
-  you were headed after signing in); a `docker-compose.prod.yml` + Caddy
-  setup for deploying to a real domain with automatic HTTPS.
-
-## Not yet built
-
-- Admin panel, voice input/output, document translation, offline grammar
-  correction, full OpenAPI documentation site, multi-document comparison UI.
-
-## Project layout
-
-```
-docbot/
-  backend/          # FastAPI app (see backend/README.md)
-  frontend/          # React app (see frontend/README.md)
-  scripts/           # setup, pull-model, logs, reset helpers
-  .github/workflows/ # CI pipeline
-  docker-compose.yml
+```text
+                Browser
+                    │
+                    ▼
+           React + Nginx
+                    │
+               FastAPI API
+                    │
+       ┌────────────┴────────────┐
+       ▼                         ▼
+   SQLite Database          ChromaDB
+                                   │
+                                   ▼
+                           Ollama (Local LLM)
 ```
 
-## Notes on the Docker setup
+---
 
-- **Ollama models are not baked into the image** — that would make it
-  multi-gigabyte and slow to build/pull. Run `./scripts/pull-model.sh`
-  once after startup instead; the model persists in a named volume across
-  restarts.
-- **nginx proxies `/api/*` to the backend** on the same origin, so the
-  browser never makes a cross-origin request in production — no CORS
-  headaches, no exposed backend port needed beyond container-to-container.
-- **All state is in named volumes** (`backend_data`, `backend_uploads`,
-  `backend_logs`, `ollama_models`) — `docker-compose down` (without `-v`)
-  preserves everything; `./scripts/reset.sh` deliberately wipes it.
-- **Health checks gate startup order**: frontend won't report healthy until
-  the backend does, and the backend waits on Ollama — `depends_on` uses
-  `condition: service_healthy`, not just "container started."
+## ✦ Roadmap
+
+- 🎙 Voice Conversations
+- 📚 Multi-Document Comparison
+- 🌍 Document Translation
+- 👨‍💼 Admin Dashboard
+- ✍ Offline Grammar Assistant
+
+---
+
+## ✦ Authors
+
+**Mesa Sarah Vasantha Zephyr**
+
+**Rampalli Prajna Paramita**
+
+Developed from research carried out during an internship at **DRDO – Advanced Systems Laboratory, Hyderabad**.
+
+---
+
+<div align="center">
+
+### 🔒 Built for Privacy • 🧠 Powered by AI • ⚡ Runs Completely Offline
+
+⭐ **If you like this project, consider giving it a star!**
+
+</div>
