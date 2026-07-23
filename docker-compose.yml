@@ -1,0 +1,83 @@
+version: "3.9"
+
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: docbot-ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    healthcheck:
+      test: ["CMD-SHELL", "ollama list || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+    networks:
+      - docbot_net
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: docbot-backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    environment:
+      - DATABASE_URL=sqlite:///./data/docbot.db
+      - UPLOAD_DIR=./uploads
+      - CHROMA_PERSIST_DIR=./data/chroma
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - CORS_ORIGINS=["http://localhost","http://localhost:80","http://localhost:5173"]
+    volumes:
+      - backend_data:/app/data
+      - backend_uploads:/app/uploads
+      - backend_logs:/app/logs
+    depends_on:
+      ollama:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    networks:
+      - docbot_net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # Empty on purpose: nginx proxies /api/* to the backend on the same
+        # origin in production, so the browser never needs a cross-origin URL.
+        VITE_API_URL: ""
+    container_name: docbot-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:80/nginx-health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - docbot_net
+
+volumes:
+  ollama_models:
+  backend_data:
+  backend_uploads:
+  backend_logs:
+
+networks:
+  docbot_net:
+    driver: bridge
